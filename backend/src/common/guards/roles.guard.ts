@@ -13,15 +13,12 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    // Jika tidak ada batasan roles, biarkan lewat
     if (!requiredRoles) {
       return true; 
     }
 
-    // Ambil payload JWT yang sudah disuntik oleh Passport JwtStrategy ke dalam Request
     const { user } = context.switchToHttp().getRequest();
     
-    // Validasi apakah role user yang sedang login cocok dengan salah satu role yang diperbolehkan
     return requiredRoles.some((role) => user.role === role);
   }
 }

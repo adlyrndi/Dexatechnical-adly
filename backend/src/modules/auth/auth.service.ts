@@ -28,7 +28,6 @@ export class AuthService {
     });
 
     await this.userRepository.save(user);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...result } = user;
     return result;
   }
@@ -44,7 +43,6 @@ export class AuthService {
       throw new UnauthorizedException('Email atau Password salah');
     }
     
-    // Siapkan Payload JWT
     const payload = { email: user.email, sub: user.id, role: user.role };
     return {
       message: "Sukses Login",

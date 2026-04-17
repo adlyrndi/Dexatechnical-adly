@@ -23,6 +23,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
-  exports: [AuthService], // Export ke depannya jika butuh validasi external
+  exports: [AuthService],
 })
 export class AuthModule {}

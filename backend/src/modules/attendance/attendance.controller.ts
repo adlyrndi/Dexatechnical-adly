@@ -8,7 +8,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../auth/entities/user.entity';
 
 @ApiTags('Attendances')
-@ApiBearerAuth() // Memasangkan gembok JWT di Swagger Swagger UI
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('attendance')
 export class AttendanceController {

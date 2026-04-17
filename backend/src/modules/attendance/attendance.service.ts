@@ -18,7 +18,6 @@ export class AttendanceService {
       where: { userId, date: todayStr }
     });
 
-    // Validasi absen ganda di hari yang sama
     if (existing && existing.clockInTime) {
       throw new BadRequestException('Anda sudah melalukan Clock-In hari ini!');
     }
@@ -28,8 +27,6 @@ export class AttendanceService {
       date: todayStr,
       clockInTime: new Date(),
       selfieUrl: dto.selfieUrl,
-      latitude: dto.latitude,
-      longitude: dto.longitude,
     });
 
     return this.attendanceRepo.save(attendance);
@@ -61,7 +58,7 @@ export class AttendanceService {
 
   async getAllAttendances() {
     return this.attendanceRepo.find({
-      relations: ['user'], // Agar tau siapa pemilik absen
+      relations: ['user'],
       order: { date: 'DESC' }
     });
   }

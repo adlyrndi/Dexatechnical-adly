@@ -6,10 +6,18 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
 
+export enum AttendanceStatus {
+  PRESENT = 'present',
+  LATE = 'late',
+  ABSENT = 'absent',
+}
+
 @Entity('attendances')
+@Unique(['userId', 'attendanceDate'])
 export class Attendance {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -22,7 +30,7 @@ export class Attendance {
   userId: string;
 
   @Column({ type: 'date' })
-  date: string; // YYYY-MM-DD format to group daily attendances easily
+  attendanceDate: string; 
 
   @Column({ type: 'timestamp', nullable: true })
   clockInTime: Date;
@@ -30,17 +38,17 @@ export class Attendance {
   @Column({ type: 'timestamp', nullable: true })
   clockOutTime: Date;
 
+  @Column({ length: 255, nullable: true })
+  clockInPhoto: string;
+
+  @Column({ length: 255, nullable: true })
+  clockOutPhoto: string;
+
+  @Column({ type: 'enum', enum: AttendanceStatus, default: AttendanceStatus.PRESENT })
+  status: AttendanceStatus;
+
   @Column({ type: 'text', nullable: true })
-  selfieUrl: string;
-
-  @Column({ type: 'decimal', precision: 10, scale: 8, nullable: true })
-  latitude: number;
-
-  @Column({ type: 'decimal', precision: 11, scale: 8, nullable: true })
-  longitude: number;
-
-  @Column({ type: 'boolean', default: false })
-  isApproved: boolean; // Optional: feature for Admin to approve WFH attendances
+  notes: string;
 
   @CreateDateColumn()
   createdAt: Date;
