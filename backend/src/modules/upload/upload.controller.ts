@@ -1,4 +1,4 @@
 import { Controller } from '@nestjs/common';
 
 @Controller('upload')
-export class UploadController {}
+export class UploadController { }
