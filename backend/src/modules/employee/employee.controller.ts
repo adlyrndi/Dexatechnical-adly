@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -12,7 +12,7 @@ import { UserRole } from '../auth/entities/user.entity';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('employee')
 export class EmployeeController {
-  constructor(private readonly employeeService: EmployeeService) {}
+  constructor(private readonly employeeService: EmployeeService) { }
 
   @Post()
   @Roles(UserRole.ADMIN)
@@ -34,4 +34,19 @@ export class EmployeeController {
   findOne(@Param('id') id: string) {
     return this.employeeService.getEmployeeById(id);
   }
+
+  @Put(':id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update data karyawan (Admin)' })
+  update(@Param('id') id: string, @Body() updateEmployeeDto: import('./dto/update-employee.dto').UpdateEmployeeDto) {
+    return this.employeeService.updateEmployee(id, updateEmployeeDto);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Soft delete karyawan (Admin)' })
+  remove(@Param('id') id: string) {
+    return this.employeeService.softDeleteEmployee(id);
+  }
 }
+

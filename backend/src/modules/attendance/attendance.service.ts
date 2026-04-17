@@ -15,7 +15,7 @@ export class AttendanceService {
     const todayStr = new Date().toISOString().split('T')[0];
 
     const existing = await this.attendanceRepo.findOne({
-      where: { userId, date: todayStr }
+      where: { userId, attendanceDate: todayStr }
     });
 
     if (existing && existing.clockInTime) {
@@ -24,9 +24,9 @@ export class AttendanceService {
 
     const attendance = this.attendanceRepo.create({
       userId,
-      date: todayStr,
+      attendanceDate: todayStr,
       clockInTime: new Date(),
-      selfieUrl: dto.selfieUrl,
+      clockInPhoto: dto.selfieUrl,
     });
 
     return this.attendanceRepo.save(attendance);
@@ -35,7 +35,7 @@ export class AttendanceService {
   async clockOut(userId: string) {
     const todayStr = new Date().toISOString().split('T')[0];
     const attendance = await this.attendanceRepo.findOne({
-      where: { userId, date: todayStr }
+      where: { userId, attendanceDate: todayStr }
     });
 
     if (!attendance) {
@@ -52,14 +52,14 @@ export class AttendanceService {
   async getMyAttendances(userId: string) {
     return this.attendanceRepo.find({
       where: { userId },
-      order: { date: 'DESC' }
+      order: { attendanceDate: 'DESC' }
     });
   }
 
   async getAllAttendances() {
     return this.attendanceRepo.find({
       relations: ['user'],
-      order: { date: 'DESC' }
+      order: { attendanceDate: 'DESC' }
     });
   }
 }

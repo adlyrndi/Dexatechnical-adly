@@ -43,6 +43,11 @@ export class AuthService {
       throw new UnauthorizedException('Email atau Password salah');
     }
     
+    // Check if soft-deleted
+    if (user.isActive === false) {
+      throw new UnauthorizedException('Akun ini telah dinonaktifkan.');
+    }
+
     const payload = { email: user.email, sub: user.id, role: user.role };
     return {
       message: "Sukses Login",
@@ -54,5 +59,18 @@ export class AuthService {
         role: user.role,
       }
     };
+  }
+
+  async getProfile(userId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'nip', 'name', 'email', 'role', 'department', 'position', 'phone', 'avatar', 'isActive', 'createdAt']
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User tidak ditemukan.');
+    }
+
+    return user;
   }
 }

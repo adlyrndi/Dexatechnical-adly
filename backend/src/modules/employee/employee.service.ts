@@ -38,10 +38,36 @@ export class EmployeeService {
   async getEmployeeById(id: string) {
     const employee = await this.userRepository.findOne({
       where: { id, role: UserRole.EMPLOYEE },
-      select: ['id', 'email', 'name', 'role', 'createdAt', 'updatedAt'],
+      select: ['id', 'email', 'name', 'role', 'department', 'position', 'phone', 'isActive', 'createdAt', 'updatedAt'],
     });
 
     if (!employee) throw new NotFoundException('Karyawan tidak ditemukan');
     return employee;
   }
+
+  async updateEmployee(id: string, updateEmployeeDto: any) {
+    const employee = await this.userRepository.findOne({ where: { id, role: UserRole.EMPLOYEE } });
+    if (!employee) throw new NotFoundException('Karyawan tidak ditemukan');
+
+    if (updateEmployeeDto.email && updateEmployeeDto.email !== employee.email) {
+      const conflict = await this.userRepository.findOne({ where: { email: updateEmployeeDto.email } });
+      if (conflict) throw new ConflictException('Email sudah terdaftar di akun lain!');
+    }
+
+    Object.assign(employee, updateEmployeeDto);
+    await this.userRepository.save(employee);
+    
+    const { passwordHash, ...result } = employee;
+    return result;
+  }
+
+  async softDeleteEmployee(id: string) {
+    const employee = await this.userRepository.findOne({ where: { id, role: UserRole.EMPLOYEE } });
+    if (!employee) throw new NotFoundException('Karyawan tidak ditemukan');
+
+    employee.isActive = false;
+    await this.userRepository.save(employee);
+    return { message: 'Karyawan berhasil dinonaktifkan (Soft Delete)' };
+  }
 }
+
