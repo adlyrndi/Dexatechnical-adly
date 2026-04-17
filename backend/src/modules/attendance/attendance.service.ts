@@ -22,10 +22,9 @@ export class AttendanceService {
       throw new BadRequestException('Anda sudah melakukan Clock-In hari ini!');
     }
 
-    // Tentukan status kedatangan berdasarkan jam (Misal jam masuk WFH = 09:00 pagi WIB)
-    // Untuk simplify test, asumsikan lewat jam 09:00 = Late
+
     const now = new Date();
-    const currentHour = now.getHours(); // Local server time
+    const currentHour = now.getHours();
     const status = currentHour >= 9 ? AttendanceStatus.LATE : AttendanceStatus.PRESENT;
 
     const notesWithLocation = dto.notes 
@@ -73,7 +72,7 @@ export class AttendanceService {
 
   async getAllAttendances() {
     return this.attendanceRepo.find({
-      relations: ['user'], // Mengambil data profil Employee beserta absensinya
+      relations: ['user'],
       order: { attendanceDate: 'DESC' }
     });
   }

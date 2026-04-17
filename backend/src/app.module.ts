@@ -11,10 +11,10 @@ import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
-    // Load .env automatically
+
     ConfigModule.forRoot({ isGlobal: true }),
 
-    // Database Connection setting (Menggunakan Async supaya stabil baca config .env)
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -25,7 +25,7 @@ import { UploadModule } from './modules/upload/upload.module';
         password: configService.get<string>('DB_PASSWORD', ''),
         database: configService.get<string>('DB_DATABASE', 'absensi_wfh'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, // Only for development/interview purpose
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),

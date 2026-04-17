@@ -15,7 +15,7 @@ export const multerOptions = {
     },
   }),
   limits: {
-    fileSize: 5 * 1024 * 1024, // max 5MB
+    fileSize: 2 * 1024 * 1024, // max 2MB
   },
   fileFilter: (req: any, file: any, cb: any) => {
     // Mengecek apakah extension image (png, jpg, jpeg, webp)
