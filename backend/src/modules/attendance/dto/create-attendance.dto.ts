@@ -1,9 +1,24 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsString, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateAttendanceDto {
-  @ApiProperty({ example: '/uploads/12345.jpg' })
+  @ApiProperty({ example: '/uploads/12345.jpg', description: 'URL Foto Bukti Selfie dari endpoint /upload' })
+  @IsNotEmpty()
   @IsString()
-  @IsNotEmpty({ message: 'Bukti selfie tidak boleh kosong' })
-  selfieUrl: string;
+  clockInPhoto: string;
+
+  @ApiPropertyOptional({ example: 'WFH dari rumah mertua', description: 'Catatan tambahan (Opsional)' })
+  @IsOptional()
+  @IsString()
+  notes?: string;
+
+  @ApiProperty({ example: -6.1234, description: 'Latitude lokasi Clock-In' })
+  @IsNotEmpty()
+  @IsNumber()
+  latitude: number;
+
+  @ApiProperty({ example: 106.1234, description: 'Longitude lokasi Clock-In' })
+  @IsNotEmpty()
+  @IsNumber()
+  longitude: number;
 }

@@ -15,30 +15,37 @@ export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @Post('clock-in')
-  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN)
-  @ApiOperation({ summary: 'Merekam absen masuk (Clock In)' })
+  @Roles(UserRole.EMPLOYEE)
+  @ApiOperation({ summary: 'Absen masuk beserta kirim Latitude/Longitude dan URL Selfie' })
   clockIn(@Req() req: any, @Body() createAttendanceDto: CreateAttendanceDto) {
     return this.attendanceService.clockIn(req.user.userId, createAttendanceDto);
   }
 
   @Post('clock-out')
-  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN)
-  @ApiOperation({ summary: 'Merekam absen selesai kerja (Clock Out)' })
+  @Roles(UserRole.EMPLOYEE)
+  @ApiOperation({ summary: 'Absen pulang' })
   clockOut(@Req() req: any) {
     return this.attendanceService.clockOut(req.user.userId);
   }
 
-  @Get('my-history')
-  @Roles(UserRole.EMPLOYEE, UserRole.ADMIN)
-  @ApiOperation({ summary: 'Melihat riwayat absen diri sendiri' })
-  getMyHistory(@Req() req: any) {
+  @Get('today')
+  @Roles(UserRole.EMPLOYEE)
+  @ApiOperation({ summary: 'Cari apakah hari ini user sedah clock-in atau belum' })
+  getTodayStatus(@Req() req: any) {
+    return this.attendanceService.getTodayStatus(req.user.userId);
+  }
+
+  @Get('history')
+  @Roles(UserRole.EMPLOYEE)
+  @ApiOperation({ summary: 'Daftar riwayat absen (Personal)' })
+  findMyHistory(@Req() req: any) {
     return this.attendanceService.getMyAttendances(req.user.userId);
   }
 
-  @Get('all')
+  @Get()
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Admin HRD melihat seluruh histori log karyawan' })
-  getAllLogs() {
+  @ApiOperation({ summary: 'Monitoring rekap semua data absen (Khusus Admin)' })
+  findAll() {
     return this.attendanceService.getAllAttendances();
   }
 }

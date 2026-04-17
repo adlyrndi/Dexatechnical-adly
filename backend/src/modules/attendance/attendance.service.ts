@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Attendance } from './entities/attendance.entity';
+import { Attendance, AttendanceStatus } from './entities/attendance.entity';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 
 @Injectable()
@@ -19,14 +19,26 @@ export class AttendanceService {
     });
 
     if (existing && existing.clockInTime) {
-      throw new BadRequestException('Anda sudah melalukan Clock-In hari ini!');
+      throw new BadRequestException('Anda sudah melakukan Clock-In hari ini!');
     }
+
+    // Tentukan status kedatangan berdasarkan jam (Misal jam masuk WFH = 09:00 pagi WIB)
+    // Untuk simplify test, asumsikan lewat jam 09:00 = Late
+    const now = new Date();
+    const currentHour = now.getHours(); // Local server time
+    const status = currentHour >= 9 ? AttendanceStatus.LATE : AttendanceStatus.PRESENT;
+
+    const notesWithLocation = dto.notes 
+      ? `${dto.notes}\n(Lat: ${dto.latitude}, Lng: ${dto.longitude})` 
+      : `(Lat: ${dto.latitude}, Lng: ${dto.longitude})`;
 
     const attendance = this.attendanceRepo.create({
       userId,
       attendanceDate: todayStr,
-      clockInTime: new Date(),
-      clockInPhoto: dto.selfieUrl,
+      clockInTime: now,
+      clockInPhoto: dto.clockInPhoto,
+      status,
+      notes: notesWithLocation,
     });
 
     return this.attendanceRepo.save(attendance);
@@ -38,15 +50,18 @@ export class AttendanceService {
       where: { userId, attendanceDate: todayStr }
     });
 
-    if (!attendance) {
-      throw new NotFoundException('Anda harus Clock-In terlebih dahulu hari ini!');
-    }
-    if (attendance.clockOutTime) {
-      throw new BadRequestException('Anda sudah Clock-Out hari ini!');
-    }
+    if (!attendance) throw new NotFoundException('Anda belum Clock-In hari ini!');
+    if (attendance.clockOutTime) throw new BadRequestException('Anda sudah Clock-Out hari ini!');
 
     attendance.clockOutTime = new Date();
     return this.attendanceRepo.save(attendance);
+  }
+
+  async getTodayStatus(userId: string) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    return this.attendanceRepo.findOne({
+      where: { userId, attendanceDate: todayStr }
+    });
   }
 
   async getMyAttendances(userId: string) {
@@ -58,7 +73,7 @@ export class AttendanceService {
 
   async getAllAttendances() {
     return this.attendanceRepo.find({
-      relations: ['user'],
+      relations: ['user'], // Mengambil data profil Employee beserta absensinya
       order: { attendanceDate: 'DESC' }
     });
   }
