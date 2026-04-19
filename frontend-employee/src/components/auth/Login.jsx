@@ -36,7 +36,7 @@ export default function Login({ onLoginSuccess, onSwitchToRegister }) {
 
           <form onSubmit={handleLogin} className="space-y-6">
             {error && <div className="p-4 bg-rose-50 text-rose-500 rounded-2xl text-sm font-bold text-center border border-rose-100">{error}</div>}
-            
+
             <div>
               <label className="block text-[0.65rem] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email atau NIP</label>
               <input className="input-field" type="text" placeholder="Masukkan Email atau NIP" value={identifier} onChange={e => setIdentifier(e.target.value)} required />

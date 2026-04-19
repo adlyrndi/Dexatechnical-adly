@@ -26,6 +26,7 @@ export default function PanelAbsen({ token, todayStatus, fetchStatus }) {
   const [clockOutFile, setClockOutFile] = useState(null);
   const [clockOutPreview, setClockOutPreview] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [notes, setNotes] = useState('');
 
@@ -53,6 +54,13 @@ export default function PanelAbsen({ token, todayStatus, fetchStatus }) {
 
   const handleClockIn = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (!photo) {
+      setError('Silakan pilih foto selfie terlebih dahulu sebelum absen masuk.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       let photoUrl = '';
@@ -69,12 +77,6 @@ export default function PanelAbsen({ token, todayStatus, fetchStatus }) {
 
         const uploadData = await uploadRes.json();
         photoUrl = uploadData.url;
-      }
-
-      if (!photoUrl) {
-        alert("Silakan pilih dan unggah foto selfie terlebih dahulu!");
-        setIsSubmitting(false);
-        return;
       }
 
       const res = await fetch(`${API_URL}/attendance/clock-in`, {
@@ -138,7 +140,7 @@ export default function PanelAbsen({ token, todayStatus, fetchStatus }) {
               </div>
 
               <div className="p-4 bg-white rounded-2xl border border-slate-100/80 shadow-sm text-left relative overflow-hidden group">
-                <div className="text-[0.6rem] font-black text-slate-400 uppercase tracking-widest mb-1.5">Status Kehadiran Langsung</div>
+                <div className="text-[0.6rem] font-black text-slate-400 uppercase tracking-widest mb-1.5">Status Kehadiran</div>
                 <div className="flex items-center gap-2.5">
                   {todayStatus?.todayStatus !== 'NOT_CLOCKED_IN' && !todayStatus?.clockOutTime && (
                     <span className="relative flex h-2.5 w-2.5">
@@ -187,9 +189,19 @@ export default function PanelAbsen({ token, todayStatus, fetchStatus }) {
             </div>
           ) : (
             <>
+              {/* Slim Fixed Error Slot (No Content Shift) */}
+              <div className="h-10 mb-4 relative">
+                {error && (
+                  <div className="absolute inset-x-0 top-0 p-2 bg-rose-50 border border-rose-100 text-rose-600 rounded-xl text-[0.6rem] font-black uppercase tracking-widest flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300 shadow-sm shadow-rose-100/20">
+                    <span className="text-sm">⚠️</span>
+                    <span className="flex-1 truncate">{error}</span>
+                    <button onClick={() => setError('')} className="opacity-40 hover:opacity-100 px-1">✕</button>
+                  </div>
+                )}
+              </div>
               {todayStatus?.todayStatus?.toUpperCase() === 'NOT_CLOCKED_IN' && (
                 <form onSubmit={handleClockIn} className="space-y-6">
-                  <div className="relative group overflow-hidden rounded-[2.5rem] border-4 border-dashed border-slate-100 hover:border-indigo-100 bg-white transition-all duration-300">
+                  <div className={`relative group overflow-hidden rounded-[2.5rem] border-4 border-dashed transition-all duration-300 bg-white ${error ? 'border-rose-200' : 'border-slate-100 hover:border-indigo-100'}`}>
                     {preview ? <img src={preview} className="w-full h-64 object-cover" alt="Pratinjau" /> : (
                       <div className="py-20 text-center">
                         <div className="text-5xl mb-4 group-hover:-translate-y-2 transition-transform duration-500">🤳</div>
@@ -225,7 +237,7 @@ export default function PanelAbsen({ token, todayStatus, fetchStatus }) {
                     <input type="file" accept="image/*" onChange={(e) => handlePhotoChange(e, 'out')} className="absolute inset-0 opacity-0 cursor-pointer" />
                   </div>
 
-                  <Button type="submit" variant="ghost" disabled={isSubmitting} className="w-full h-14 border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/50 italic tracking-widest uppercase font-black">
+                  <Button type="submit" disabled={isSubmitting} className="w-full h-14 italic tracking-widest uppercase font-black">
                     {isSubmitting ? 'Memproses...' : 'Absen Pulang'}
                   </Button>
                 </form>
