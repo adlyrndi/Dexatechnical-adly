@@ -9,16 +9,16 @@ export const multerOptions = {
   storage: diskStorage({
     destination: './uploads',
     filename: (req, file, cb) => {
-      // Menghasilkan nama unik
+      
       const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
       cb(null, uniqueName);
     },
   }),
   limits: {
-    fileSize: 2 * 1024 * 1024, // max 2MB
+    fileSize: 2 * 1024 * 1024, 
   },
   fileFilter: (req: any, file: any, cb: any) => {
-    // Mengecek apakah extension image (png, jpg, jpeg, webp)
+    
     if (file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
       cb(null, true);
     } else {
@@ -48,7 +48,7 @@ export class UploadController {
   @UseInterceptors(FileInterceptor('file', multerOptions))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('File is required');
-    // Return the path so frontend can save this path onto DB via clock-in API
+    
     return {
       message: 'Upload Success',
       url: `/uploads/${file.filename}`,

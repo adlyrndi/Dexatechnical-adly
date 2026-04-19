@@ -33,11 +33,11 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    // Mencari berdasarkan Email ATAU NIP
+    
     const user = await this.userRepository.findOne({
       where: [
         { email: loginDto.email },
-        { nip: loginDto.email } // Menggunakan field yang sama untuk mengecek NIP
+        { nip: loginDto.email } 
       ]
     });
 

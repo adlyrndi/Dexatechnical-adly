@@ -34,7 +34,7 @@ export class AuthController {
   async seedAdmin() {
     console.log('--- SEEDING ADMIN ACCOUNT ---');
     try {
-      // Cek apakah sudah ada
+      
       const repo = (this.authService as any).userRepository; 
       let user = await repo.findOne({ where: { email: 'admin@dexa.com' } });
       
