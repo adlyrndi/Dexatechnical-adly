@@ -227,14 +227,8 @@ export default function PanelAbsen({ token, todayStatus, fetchStatus }) {
                     <p className="text-sm font-bold text-slate-400 mt-1">Telemetri Anda sedang direkam secara real-time.</p>
                   </div>
 
-                  <div className="relative group overflow-hidden rounded-3xl border-2 border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-all cursor-pointer w-full max-w-sm mx-auto">
-                    {clockOutPreview ? <img src={clockOutPreview} className="w-full h-44 object-cover" alt="Pratinjau Keluar" /> : (
-                      <div className="py-10 text-center">
-                        <div className="text-3xl mb-2 opacity-50">📸</div>
-                        <div className="font-black text-[0.6rem] text-slate-300 uppercase tracking-widest">Foto Ringkasan (Opsional)</div>
-                      </div>
-                    )}
-                    <input type="file" accept="image/*" onChange={(e) => handlePhotoChange(e, 'out')} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  <div className="py-4">
+                    {/* Foto opsional dihapus untuk menjaga konsistensi tinggi kartu */}
                   </div>
 
                   <Button type="submit" disabled={isSubmitting} className="w-full h-14 italic tracking-widest uppercase font-black">
