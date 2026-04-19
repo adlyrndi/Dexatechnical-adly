@@ -1,12 +1,7 @@
-export function Input({ label, type = 'text', ...props }) {
-  return (
-    <div className="input-group">
-      {label && <label className="input-label">{label}</label>}
-      {type === 'textarea' ? (
-        <textarea className="input-field" {...props} />
-      ) : (
-        <input type={type} className="input-field" {...props} />
-      )}
-    </div>
-  );
-}
+export const Input = ({ label, ...props }) => (
+  <div className="mb-6">
+    {label && <label className="block text-[0.65rem] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{label}</label>}
+    {props.type === 'textarea' ? <textarea className="input-field" {...props}></textarea> : <input className="input-field" {...props} />}
+  </div>
+);
+export default Input;

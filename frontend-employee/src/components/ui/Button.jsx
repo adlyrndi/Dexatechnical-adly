@@ -1,7 +1,4 @@
-export function Button({ variant = 'primary', className = '', children, ...props }) {
-  return (
-    <button className={`btn btn-${variant} ${className}`} {...props}>
-      {children}
-    </button>
-  );
-}
+export const Button = ({ children, variant = "primary", className = "", ...props }) => (
+  <button className={`${variant === "primary" ? "btn-primary" : "btn-ghost"} ${className}`} {...props}>{children}</button>
+);
+export default Button;

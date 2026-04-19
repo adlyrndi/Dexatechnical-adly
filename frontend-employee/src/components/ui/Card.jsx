@@ -1,7 +1,4 @@
-export function Card({ children, className = '', style = {} }) {
-  return (
-    <div className={`glass-card ${className}`} style={style}>
-      {children}
-    </div>
-  );
-}
+export const Card = ({ children, className = "", style = {} }) => (
+  <div className="glass-card ${className}" style={style}>{children}</div>
+);
+export default Card;
