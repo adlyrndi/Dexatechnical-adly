@@ -12,7 +12,8 @@ export class AttendanceService {
   ) {}
 
   async clockIn(userId: string, dto: CreateAttendanceDto) {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const todayStr = new Date(now.getTime() + (7 * 60 * 60 * 1000)).toISOString().split('T')[0];
 
     const existing = await this.attendanceRepo.findOne({
       where: { userId, attendanceDate: todayStr }
@@ -23,13 +24,8 @@ export class AttendanceService {
     }
 
 
-    const now = new Date();
-    const currentHour = now.getHours();
+    const currentHour = new Date(now.getTime() + (7 * 60 * 60 * 1000)).getUTCHours();
     const status = currentHour >= 9 ? AttendanceStatus.LATE : AttendanceStatus.PRESENT;
-
-    const notesWithLocation = dto.notes 
-      ? `${dto.notes}\n(Lat: ${dto.latitude}, Lng: ${dto.longitude})` 
-      : `(Lat: ${dto.latitude}, Lng: ${dto.longitude})`;
 
     const attendance = this.attendanceRepo.create({
       userId,
@@ -37,14 +33,15 @@ export class AttendanceService {
       clockInTime: now,
       clockInPhoto: dto.clockInPhoto,
       status,
-      notes: notesWithLocation,
+      notes: dto.notes,
     });
 
     return this.attendanceRepo.save(attendance);
   }
 
-  async clockOut(userId: string) {
-    const todayStr = new Date().toISOString().split('T')[0];
+  async clockOut(userId: string, clockOutPhoto?: string) {
+    const now = new Date();
+    const todayStr = new Date(now.getTime() + (7 * 60 * 60 * 1000)).toISOString().split('T')[0];
     const attendance = await this.attendanceRepo.findOne({
       where: { userId, attendanceDate: todayStr }
     });
@@ -53,6 +50,10 @@ export class AttendanceService {
     if (attendance.clockOutTime) throw new BadRequestException('Anda sudah Clock-Out hari ini!');
 
     attendance.clockOutTime = new Date();
+    if (clockOutPhoto) {
+      attendance.clockOutPhoto = clockOutPhoto;
+    }
+    
     return this.attendanceRepo.save(attendance);
   }
 

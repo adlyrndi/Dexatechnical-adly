@@ -12,13 +12,4 @@ export class CreateAttendanceDto {
   @IsString()
   notes?: string;
 
-  @ApiProperty({ example: -6.1234, description: 'Latitude lokasi Clock-In' })
-  @IsNotEmpty()
-  @IsNumber()
-  latitude: number;
-
-  @ApiProperty({ example: 106.1234, description: 'Longitude lokasi Clock-In' })
-  @IsNotEmpty()
-  @IsNumber()
-  longitude: number;
 }

@@ -23,9 +23,9 @@ export class AttendanceController {
 
   @Post('clock-out')
   @Roles(UserRole.EMPLOYEE)
-  @ApiOperation({ summary: 'Absen pulang' })
-  clockOut(@Req() req: any) {
-    return this.attendanceService.clockOut(req.user.userId);
+  @ApiOperation({ summary: 'Absen pulang (Mendukung upload foto opsional)' })
+  clockOut(@Req() req: any, @Body() body: { clockOutPhoto?: string }) {
+    return this.attendanceService.clockOut(req.user.userId, body?.clockOutPhoto);
   }
 
   @Get('today')

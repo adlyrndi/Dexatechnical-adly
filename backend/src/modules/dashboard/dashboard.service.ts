@@ -14,7 +14,7 @@ export class DashboardService {
   ) {}
 
   async getAdminStats() {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = new Date(new Date().getTime() + (7 * 60 * 60 * 1000)).toISOString().split('T')[0];
     
     const totalEmployees = await this.userRepo.count({ where: { role: UserRole.EMPLOYEE, isActive: true } });
     const totalPresentToday = await this.attendanceRepo.count({ where: { attendanceDate: todayStr, status: AttendanceStatus.PRESENT } });
@@ -34,7 +34,7 @@ export class DashboardService {
   }
 
   async getEmployeeStats(userId: string) {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = new Date(new Date().getTime() + (7 * 60 * 60 * 1000)).toISOString().split('T')[0];
     const currentYearMonth = todayStr.substring(0, 7);
 
     const totalPresentMonth = await this.attendanceRepo.count({ 
@@ -55,6 +55,8 @@ export class DashboardService {
         late: totalLateMonth,
       },
       todayStatus: isClockedInToday ? isClockedInToday.status : 'NOT_CLOCKED_IN',
+      clockInTime: isClockedInToday?.clockInTime || null,
+      clockOutTime: isClockedInToday?.clockOutTime || null,
     };
   }
 }

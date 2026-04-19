@@ -33,14 +33,21 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.userRepository.findOne({ where: { email: loginDto.email } });
+    // Mencari berdasarkan Email ATAU NIP
+    const user = await this.userRepository.findOne({
+      where: [
+        { email: loginDto.email },
+        { nip: loginDto.email } // Menggunakan field yang sama untuk mengecek NIP
+      ]
+    });
+
     if (!user) {
-      throw new UnauthorizedException('Email atau Password salah');
+      throw new UnauthorizedException('Email/NIP atau Password salah');
     }
 
     const isMatch = await bcrypt.compare(loginDto.password, user.passwordHash);
     if (!isMatch) {
-      throw new UnauthorizedException('Email atau Password salah');
+      throw new UnauthorizedException('Email/NIP atau Password salah');
     }
     
 

@@ -7,6 +7,10 @@ export class RegisterDto {
   @IsNotEmpty({ message: 'Nama tidak boleh kosong' })
   name: string;
 
+  @ApiProperty({ example: 'EMP-001', description: 'Nomor Identitas Pegawai (NIP)' })
+  @IsNotEmpty({ message: 'NIP tidak boleh kosong' })
+  nip: string;
+
   @ApiProperty({ example: 'budi@dexa.com', description: 'Email unik karyawan' })
   @IsEmail({}, { message: 'Format email tidak valid' })
   email: string;
