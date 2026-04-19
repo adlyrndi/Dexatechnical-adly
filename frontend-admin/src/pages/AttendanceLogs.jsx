@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { adminService } from '../services/api';
 import { API_URL } from '../utils/constants';
 import { Card, Badge, Avatar, Button } from '../components/ui';
@@ -65,7 +66,7 @@ export default function AttendanceLogs() {
                     </div>
                   </td>
                   <td className="px-12 py-8">
-                    <Badge variant={log.status?.toUpperCase() === 'PRESENT' ? 'emerald' : 'amber'} className="px-4 py-2 rounded-xl text-[0.65rem] font-black uppercase tracking-wider">
+                    <Badge variant={log.status?.toUpperCase() === 'PRESENT' ? 'emerald' : 'amber'} className="px-4 py-2 rounded-xl text-[0.65rem] font-black uppercase tracking-wider whitespace-nowrap">
                       {log.status?.toUpperCase() === 'PRESENT' ? 'TEPAT WAKTU' : 'TERLAMBAT'}
                     </Badge>
                   </td>
@@ -97,18 +98,37 @@ export default function AttendanceLogs() {
         </div>
       </Card>
 
-      {selectedPhoto && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[200] p-6 animate-in fade-in zoom-in duration-500" onClick={() => setSelectedPhoto(null)}>
-          <div className="relative max-w-lg w-full" onClick={e => e.stopPropagation()}>
-             <Card className="p-3 bg-white/10 border-white/20 shadow-2xl overflow-hidden rounded-[3rem]">
-                <img src={selectedPhoto} className="w-full rounded-[2rem] shadow-2xl object-cover" alt="Bukti Absensi" />
-                <div className="p-8 text-center bg-white mt-3 rounded-[2rem]">
-                  <h3 className="text-slate-900 font-black uppercase tracking-[0.2em] text-[0.65rem] mb-6 underline decoration-blue-500 decoration-4 underline-offset-8">Status Verifikasi Real-Time</h3>
-                  <Button onClick={() => setSelectedPhoto(null)} className="w-full h-14 rounded-xl uppercase tracking-widest text-xs">Kembali Ke Dashboard</Button>
-                </div>
-             </Card>
+      {selectedPhoto && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[9999] p-4 sm:p-6 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setSelectedPhoto(null)}>
+          <div 
+            className="bg-white w-full max-w-xl rounded-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out flex flex-col relative" 
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="px-12 pt-12 pb-6 flex justify-between items-start">
+              <div>
+                <h2 className="text-4xl font-black text-slate-900 tracking-tighter italic mb-1">
+                  Bukti <span className="text-blue-600">Presensi</span>
+                </h2>
+                <p className="text-[0.65rem] font-bold text-slate-400 uppercase tracking-[0.3em]">
+                  Verifikasi Real-Time Karyawan
+                </p>
+              </div>
+              <button 
+                onClick={() => setSelectedPhoto(null)} 
+                className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all font-black"
+                aria-label="Tutup"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="px-12 pb-12">
+              <div className="bg-slate-50 p-2 rounded-[2rem] border-2 border-slate-100 shadow-inner">
+                <img src={selectedPhoto} className="w-full h-auto max-h-[50vh] rounded-[1.5rem] object-contain bg-slate-200/50" alt="Bukti Absensi" />
+              </div>
+            </div>
           </div>
-        </div>
+        </div>, document.body
       )}
     </div>
   );
