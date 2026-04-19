@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -8,12 +8,32 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
   ) {}
+
+  async onModuleInit() {
+    const adminEmail = 'admin@dexa.com';
+    const adminExists = await this.userRepository.findOne({ where: { email: adminEmail } });
+
+    if (!adminExists) {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      const admin = this.userRepository.create({
+        name: 'Administrator Dexa',
+        email: adminEmail,
+        passwordHash: hashedPassword,
+        role: UserRole.ADMIN,
+        nip: 'ADMIN-001',
+        position: 'System Administrator',
+        isActive: true,
+      });
+      await this.userRepository.save(admin);
+      console.log('✅ Default Admin created: admin@dexa.com / admin123');
+    }
+  }
 
   async register(registerDto: RegisterDto) {
     const existing = await this.userRepository.findOne({ where: { email: registerDto.email } });
