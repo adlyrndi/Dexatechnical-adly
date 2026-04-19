@@ -24,8 +24,13 @@ export class AttendanceService {
     }
 
 
-    const currentHour = new Date(now.getTime() + (7 * 60 * 60 * 1000)).getUTCHours();
-    const status = currentHour >= 9 ? AttendanceStatus.LATE : AttendanceStatus.PRESENT;
+    const localNow = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+    const currentHour = localNow.getUTCHours();
+    const currentMinute = localNow.getUTCMinutes();
+    
+    // Telat jika lebih dari jam 08:00 (08:01 ke atas hitung telat)
+    const isLate = currentHour > 8 || (currentHour === 8 && currentMinute > 0);
+    const status = isLate ? AttendanceStatus.LATE : AttendanceStatus.PRESENT;
 
     const attendance = this.attendanceRepo.create({
       userId,

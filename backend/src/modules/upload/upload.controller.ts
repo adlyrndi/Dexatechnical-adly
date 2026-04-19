@@ -9,8 +9,8 @@ export const multerOptions = {
   storage: diskStorage({
     destination: './uploads',
     filename: (req, file, cb) => {
-      
-      const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
+      const now = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const uniqueName = `SELFIE_${now}_${uuidv4()}${extname(file.originalname)}`;
       cb(null, uniqueName);
     },
   }),

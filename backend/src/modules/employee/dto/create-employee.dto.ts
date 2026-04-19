@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, MinLength, IsEnum } from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '../../auth/entities/user.entity';
 
@@ -16,7 +16,16 @@ export class CreateEmployeeDto {
   @MinLength(6, { message: 'Password minimal 6 karakter' })
   password: string;
 
+  @ApiProperty({ example: 'EMP-001', description: 'Nomor Identitas Pegawai (NIP)' })
+  @IsNotEmpty({ message: 'NIP tidak boleh kosong' })
+  nip: string;
+
+  @ApiProperty({ example: 'Senior Staff', description: 'Jabatan Karyawan' })
+  @IsOptional()
+  position?: string;
+
   @ApiProperty({ enum: UserRole, default: UserRole.EMPLOYEE })
+  @IsOptional()
   @IsEnum(UserRole, { message: 'Role harus valid' })
-  role: UserRole;
+  role?: UserRole;
 }

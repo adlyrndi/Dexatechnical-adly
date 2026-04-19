@@ -29,8 +29,8 @@ export class EmployeeService {
 
   async getAllEmployees() {
     return this.userRepository.find({
-      where: { role: UserRole.EMPLOYEE },
-      select: ['id', 'email', 'name', 'role', 'createdAt', 'updatedAt'],
+      where: { role: UserRole.EMPLOYEE, isActive: true },
+      select: ['id', 'nip', 'email', 'name', 'position', 'role', 'createdAt', 'updatedAt'],
       order: { createdAt: 'DESC' }
     });
   }
@@ -52,6 +52,11 @@ export class EmployeeService {
     if (updateEmployeeDto.email && updateEmployeeDto.email !== employee.email) {
       const conflict = await this.userRepository.findOne({ where: { email: updateEmployeeDto.email } });
       if (conflict) throw new ConflictException('Email sudah terdaftar di akun lain!');
+    }
+
+    if (updateEmployeeDto.password) {
+      updateEmployeeDto.passwordHash = await bcrypt.hash(updateEmployeeDto.password, 10);
+      delete updateEmployeeDto.password;
     }
 
     Object.assign(employee, updateEmployeeDto);

@@ -10,7 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
 
-  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   });
 
@@ -19,7 +19,9 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  app.use(helmet());
+  app.use(helmet({
+    crossOriginResourcePolicy: false,
+  }));
 
   app.useGlobalPipes(
     new ValidationPipe({
