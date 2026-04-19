@@ -1,19 +1,27 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { adminService } from '../services/api';
-import { Card, Button, Input, Badge, Avatar } from '../components/ui';
+import { Card, Button, Input, Badge, Avatar, Toast } from '../components/ui';
 
 export default function Employees() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [modalMode, setModalMode] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
+  const [toast, setToast] = useState({ message: '', type: 'success' });
   const [formData, setFormData] = useState({ name: '', email: '', nip: '', position: '', password: '' });
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast({ message: '', type: 'success' }), 3000);
+  };
 
   const fetchEmployees = async () => {
     try {
       const data = await adminService.getEmployees();
       setEmployees(data);
-    } catch (err) { console.error('Gagal memuat karyawan'); }
+    } catch (err) { showToast('Gagal memuat data!', 'error'); }
     finally { setLoading(false); }
   };
 
@@ -23,9 +31,9 @@ export default function Employees() {
     setModalMode(mode);
     if (mode === 'edit' && emp) {
       setSelectedId(emp.id);
-      setFormData({ name: emp.name, email: emp.email, nip: emp.nip, position: emp.position, password: '' });
+      setFormData({ name: emp.name, email: emp.email, nip: emp.nip, position: emp.position || '', password: '' });
     } else {
-      setFormData({ name: '', email: '', nip: '', position: '', password: 'password123' });
+      setFormData({ name: '', email: '', nip: '', position: '', password: '' });
     }
   };
 
@@ -33,108 +41,163 @@ export default function Employees() {
     e.preventDefault();
     try {
       if (modalMode === 'add') {
-        await adminService.createEmployee(formData);
+        if (!formData.password) { showToast('Password wajib diisi!', 'error'); return; }
+        await adminService.createEmployee({ ...formData, role: 'EMPLOYEE' });
+        showToast('Karyawan berhasil didaftarkan!');
       } else {
         const updateData = { ...formData };
         if (!updateData.password) delete updateData.password;
         await adminService.updateEmployee(selectedId, updateData);
+        showToast('Info profil berhasil diperbarui!');
       }
       setModalMode(null);
       fetchEmployees();
-    } catch (err) { alert(err.message); }
+    } catch (err) { showToast(err.message, 'error'); }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Yakin ingin menghapus karyawan ini? Secara permanen akan menghapus data riwayat absensinya.')) {
+    if (window.confirm('Yakin ingin memutus akses personel ini?')) {
       try {
         await adminService.deleteEmployee(id);
+        showToast('Karyawan berhasil dinonaktifkan.');
         fetchEmployees();
-      } catch (err) { alert(err.message); }
+      } catch (err) { showToast('Gagal menghapus data!', 'error'); }
     }
   };
 
+  const filteredEmployees = employees.filter(emp =>
+    (emp.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (emp.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+    (emp.nip || '').includes(searchQuery)
+  );
+
   return (
-    <div className="space-y-10">
-      <div className="flex justify-between items-end">
+    <div className="space-y-10 animate-in fade-in duration-700 relative">
+      <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: 'success' })} />
+
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-           <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic">Personel <span className="text-blue-600">Dexa</span></h1>
-          <p className="text-slate-400 font-bold mt-1 uppercase text-[0.7rem] tracking-[0.3em]">Manajemen Database Karyawan</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic">Database <span className="text-blue-600">Personel</span></h1>
+          <p className="text-slate-400 font-bold mt-1 uppercase text-[0.65rem] tracking-[0.3em]">Otoritas & Manajemen Profil Karyawan</p>
         </div>
-        <Button onClick={() => handleOpenModal('add')} className="px-10 h-16 shadow-[0_12px_40px_rgba(37,99,235,0.25)] uppercase tracking-[0.2em] text-[0.75rem] font-black italic rounded-2xl">
-          + Daftarkan Personel
+        <Button onClick={() => handleOpenModal('add')} className="px-10 h-16 shadow-xl shadow-blue-100 uppercase tracking-widest text-[0.7rem] font-black italic rounded-[1.25rem]">
+          + Registrasi Personel
         </Button>
       </div>
 
-      <Card className="overflow-hidden border-none bg-white shadow-2xl shadow-slate-200/60 rounded-[2.5rem]">
+      <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+        <div className="relative w-full max-w-lg group">
+          <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors">🔍</span>
+          <input
+            type="text"
+            placeholder="Cari berdasarkan Nama, NIP, atau Email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-14 pr-8 h-16 rounded-[1.5rem] bg-white border-2 border-slate-100 focus:border-blue-600 focus:outline-none focus:ring-8 focus:ring-blue-50 transition-all text-sm font-bold shadow-sm"
+          />
+        </div>
+        <Badge variant="slate" className="px-6 py-2.5 rounded-2xl border-slate-200 shadow-sm font-black">Total: {employees.length} Karyawan</Badge>
+      </div>
+
+      <Card className="overflow-hidden border-none bg-white shadow-2xl shadow-slate-200/50 rounded-[2.5rem]">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-10 py-6 text-[0.65rem] font-black text-slate-400 uppercase tracking-[0.25em]">Identitas Karyawan</th>
-                <th className="px-10 py-6 text-[0.65rem] font-black text-slate-400 uppercase tracking-[0.25em]">Detail NIP</th>
-                <th className="px-10 py-6 text-[0.65rem] font-black text-slate-400 uppercase tracking-[0.25em]">Jabatan Struktural</th>
-                <th className="px-10 py-6 text-[0.65rem] font-black text-slate-400 uppercase tracking-[0.25em]">Aksi</th>
+              <tr className="bg-slate-50/70 border-b border-slate-100">
+                <th className="px-12 py-7 text-[0.65rem] font-black text-slate-400 uppercase tracking-[0.3em]">Identitas Karyawan</th>
+                <th className="px-12 py-7 text-[0.65rem] font-black text-slate-400 uppercase tracking-[0.3em]">NIP</th>
+                <th className="px-12 py-7 text-[0.65rem] font-black text-slate-400 uppercase tracking-[0.3em]">Jabatan</th>
+                <th className="px-12 py-7 text-[0.65rem] font-black text-slate-400 uppercase tracking-[0.3em]">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {employees.map((emp) => (
+              {filteredEmployees.map((emp) => (
                 <tr key={emp.id} className="group hover:bg-blue-50/30 transition-all duration-300">
-                  <td className="px-10 py-7">
-                    <div className="flex items-center gap-4">
-                      <Avatar name={emp.name} className="w-14 h-14 text-sm shadow-xl border-4 border-white group-hover:scale-110 transition-transform" />
+                  <td className="px-12 py-8">
+                    <div className="flex items-center gap-5">
+                      <Avatar name={emp.name} className="w-14 h-14 shadow-2xl border-4 border-white" />
                       <div>
                         <div className="text-base font-black text-slate-900 leading-tight mb-1">{emp.name}</div>
-                        <div className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-widest">{emp.email}</div>
+                        <div className="text-[0.65rem] font-bold text-blue-500 uppercase tracking-widest">{emp.email}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-10 py-7">
-                    <Badge variant="blue" className="px-4 py-1.5 rounded-xl text-[0.7rem]">{emp.nip}</Badge>
+                  <td className="px-12 py-8">
+                    <div className="font-mono text-sm font-black text-slate-600 bg-slate-100 px-4 py-1.5 rounded-xl border border-slate-100 inline-block">{emp.nip}</div>
                   </td>
-                  <td className="px-10 py-7">
-                    <span className="text-xs font-black text-slate-600 uppercase tracking-[0.15em]">{emp.position}</span>
+                  <td className="px-12 py-8">
+                    <Badge variant="blue" className="px-4 py-2 rounded-xl text-[0.65rem] font-black uppercase tracking-wider">
+                      {emp.position || 'STAF'}
+                    </Badge>
                   </td>
-                  <td className="px-10 py-7">
-                    <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0 transition-transform">
-                      <button onClick={() => handleOpenModal('edit', emp)} className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white text-blue-600 shadow-xl shadow-blue-100 border border-blue-50 hover:bg-blue-600 hover:text-white transition-all">✏️</button>
-                      <button onClick={() => handleDelete(emp.id)} className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white text-rose-600 shadow-xl shadow-rose-100 border border-rose-50 hover:bg-rose-600 hover:text-white transition-all">🗑️</button>
+                  <td className="px-12 py-8">
+                    <div className="flex gap-3">
+                      <button onClick={() => handleOpenModal('edit', emp)} className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white text-blue-600 shadow-xl border border-blue-50 hover:bg-blue-600 hover:text-white transition-all transform hover:-translate-y-1">✏️</button>
+                      <button onClick={() => handleDelete(emp.id)} className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white text-rose-600 shadow-xl border border-rose-50 hover:bg-rose-600 hover:text-white transition-all transform hover:-translate-y-1">🗑️</button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {employees.length === 0 && !loading && (
-            <div className="py-32 text-center">
-              <div className="text-6xl mb-6 grayscale opacity-20">📂</div>
-              <div className="text-slate-400 font-bold uppercase tracking-[0.3em] text-[0.65rem]">Belum ada data personel terdaftar</div>
-            </div>
-          )}
         </div>
       </Card>
 
-      {modalMode && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-6 animate-in fade-in duration-500">
-          <Card className="w-full max-w-xl p-12 shadow-[0_32px_80px_rgba(0,0,0,0.2)] rounded-[3rem] border-white/20">
-            <h2 className="text-3xl font-black text-slate-900 mb-2 italic">{modalMode === 'add' ? 'Registrasi Personel' : 'Modifikasi Data'}</h2>
-            <p className="text-[0.65rem] font-bold text-slate-400 uppercase tracking-[0.25em] mb-12">{modalMode === 'add' ? 'Masukkan data lengkap karyawan baru' : 'Sesuaikan informasi profil karyawan terpilih'}</p>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <Input label="Nama Lengkap" placeholder="Budi Santoso" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
-              <div className="grid grid-cols-2 gap-6">
-                <Input label="NIP" placeholder="123456" value={formData.nip} onChange={e => setFormData({...formData, nip: e.target.value})} required />
-                <Input label="Jabatan" placeholder="Software Engineer" value={formData.position} onChange={e => setFormData({...formData, position: e.target.value})} required />
+      {modalMode && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[9999] p-4 sm:p-6 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setModalMode(null)}>
+          <div 
+            className="bg-white w-full max-w-2xl rounded-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out flex flex-col relative" 
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header Modal */}
+            <div className="px-12 pt-12 pb-6 flex justify-between items-start">
+              <div>
+                <h2 className="text-4xl font-black text-slate-900 tracking-tighter italic mb-1">
+                  {modalMode === 'add' ? 'Registrasi' : 'Pembaruan'} <span className="text-blue-600">Profil</span>
+                </h2>
+                <p className="text-[0.65rem] font-bold text-slate-400 uppercase tracking-[0.3em]">
+                  Kelola Detail Karyawan
+                </p>
               </div>
-              <Input label="Email Perusahaan" type="email" placeholder="budi@dexa.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required />
-              <Input label={modalMode === 'edit' ? "Sandi Baru (Kosongkan jika tetap)" : "Akses Kata Sandi"} type="password" placeholder="••••••••" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required={modalMode === 'add'} />
-              
-              <div className="flex gap-6 mt-14">
-                <Button type="button" variant="ghost" onClick={() => setModalMode(null)} className="flex-1 h-16 border-slate-100 uppercase tracking-widest text-xs">Batal</Button>
-                <Button type="submit" className="flex-1 h-16 uppercase tracking-[0.2em] font-black italic">Simpan Perubahan</Button>
-              </div>
-            </form>
-          </Card>
-        </div>
+              <button 
+                onClick={() => setModalMode(null)} 
+                className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all font-black"
+                aria-label="Tutup"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Form Konten */}
+            <div className="px-12 pb-12">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  <Input label="Nama Lengkap" placeholder="Masukkan nama..." value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                  <Input label="NIP Karyawan" placeholder="Contoh: 100200" value={formData.nip} onChange={e => setFormData({ ...formData, nip: e.target.value })} required />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  <Input label="Email Perusahaan" type="email" placeholder="karyawan@dexa.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} required />
+                  <Input label="Jabatan Fungsional" placeholder="Contoh: IT Support" value={formData.position} onChange={e => setFormData({ ...formData, position: e.target.value })} />
+                </div>
+
+                <div>
+                   <Input label={modalMode === 'edit' ? "Sandi Baru (Kosongkan jika tetap)" : "Sandi Akses Portal"} type="password" placeholder="••••••••" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required={modalMode === 'add'} />
+                </div>
+
+                {/* Aksi Tombol */}
+                <div className="flex justify-end gap-6 pt-4">
+                  <Button type="button" variant="ghost" onClick={() => setModalMode(null)} className="flex-1 h-16 rounded-[1.5rem] border border-slate-100 text-[0.7rem] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all">
+                    Batalkan
+                  </Button>
+                  <Button type="submit" className="flex-1 h-16 rounded-[1.5rem] bg-blue-600 text-white shadow-xl shadow-blue-100 text-[0.7rem] font-black italic uppercase tracking-widest hover:bg-blue-700 transition-all">
+                    {modalMode === 'add' ? 'SIMPAN PERSONEL' : 'UPDATE DATA'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>, document.body
       )}
     </div>
   );
