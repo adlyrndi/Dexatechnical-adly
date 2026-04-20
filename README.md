@@ -5,7 +5,7 @@ Sistem Manajemen Kehadiran (Presensi) berbasis web untuk memantau aktivitas kary
 ## Fitur Utama
 1. **Portal Administrator**: 
    - Dashboard statistik (Hadir, Terlambat, Absen).
-   - Manajemen Database Personel (CRUD Karyawan).
+   - Manajemen Database Karyawan (CRUD Karyawan).
    - Monitoring Log Presensi Real-Time.
    - Verifikasi Bukti Foto Absensi.
 2. **Portal Karyawan**:

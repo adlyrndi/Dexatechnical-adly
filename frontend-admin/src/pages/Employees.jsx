@@ -11,6 +11,7 @@ export default function Employees() {
   const [selectedId, setSelectedId] = useState(null);
   const [toast, setToast] = useState({ message: '', type: 'success' });
   const [formData, setFormData] = useState({ name: '', email: '', nip: '', position: '', password: '' });
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -56,13 +57,12 @@ export default function Employees() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Yakin ingin memutus akses personel ini?')) {
-      try {
-        await adminService.deleteEmployee(id);
-        showToast('Karyawan berhasil dinonaktifkan.');
-        fetchEmployees();
-      } catch (err) { showToast('Gagal menghapus data!', 'error'); }
-    }
+    try {
+      await adminService.deleteEmployee(id);
+      showToast('Karyawan berhasil dinonaktifkan.');
+      fetchEmployees();
+      setConfirmDelete(null);
+    } catch (err) { showToast('Gagal menghapus data!', 'error'); }
   };
 
   const filteredEmployees = employees.filter(emp =>
@@ -77,11 +77,11 @@ export default function Employees() {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic">Database <span className="text-blue-600">Personel</span></h1>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic">Database <span className="text-blue-600">Karyawan</span></h1>
           <p className="text-slate-400 font-bold mt-1 uppercase text-[0.65rem] tracking-[0.3em]">Otoritas & Manajemen Profil Karyawan</p>
         </div>
         <Button onClick={() => handleOpenModal('add')} className="px-10 h-16 shadow-xl shadow-blue-100 uppercase tracking-widest text-[0.7rem] font-black italic rounded-[1.25rem]">
-          + Registrasi Personel
+          + Registrasi Karyawan
         </Button>
       </div>
 
@@ -133,7 +133,7 @@ export default function Employees() {
                   <td className="px-12 py-8">
                     <div className="flex gap-3">
                       <button onClick={() => handleOpenModal('edit', emp)} className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white text-blue-600 shadow-xl border border-blue-50 hover:bg-blue-600 hover:text-white transition-all transform hover:-translate-y-1">✏️</button>
-                      <button onClick={() => handleDelete(emp.id)} className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white text-rose-600 shadow-xl border border-rose-50 hover:bg-rose-600 hover:text-white transition-all transform hover:-translate-y-1">🗑️</button>
+                      <button onClick={() => setConfirmDelete(emp)} className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white text-rose-600 shadow-xl border border-rose-50 hover:bg-rose-600 hover:text-white transition-all transform hover:-translate-y-1">🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -149,7 +149,6 @@ export default function Employees() {
             className="bg-white w-full max-w-2xl rounded-[3rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out flex flex-col relative" 
             onClick={e => e.stopPropagation()}
           >
-            {/* Header Modal */}
             <div className="px-12 pt-12 pb-6 flex justify-between items-start">
               <div>
                 <h2 className="text-4xl font-black text-slate-900 tracking-tighter italic mb-1">
@@ -168,7 +167,6 @@ export default function Employees() {
               </button>
             </div>
 
-            {/* Form Konten */}
             <div className="px-12 pb-12">
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
@@ -185,16 +183,35 @@ export default function Employees() {
                    <Input label={modalMode === 'edit' ? "Sandi Baru (Kosongkan jika tetap)" : "Sandi Akses Portal"} type="password" placeholder="••••••••" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} required={modalMode === 'add'} />
                 </div>
 
-                {/* Aksi Tombol */}
                 <div className="flex justify-end gap-6 pt-4">
                   <Button type="button" variant="ghost" onClick={() => setModalMode(null)} className="flex-1 h-16 rounded-[1.5rem] border border-slate-100 text-[0.7rem] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all">
                     Batalkan
                   </Button>
                   <Button type="submit" className="flex-1 h-16 rounded-[1.5rem] bg-blue-600 text-white shadow-xl shadow-blue-100 text-[0.7rem] font-black italic uppercase tracking-widest hover:bg-blue-700 transition-all">
-                    {modalMode === 'add' ? 'SIMPAN PERSONEL' : 'UPDATE DATA'}
+                    {modalMode === 'add' ? 'SIMPAN KARYAWAN' : 'UPDATE DATA'}
                   </Button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>, document.body
+      )}
+
+      {confirmDelete && createPortal(
+        <div className="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-[10000] p-4 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setConfirmDelete(null)}>
+          <div className="bg-white w-full max-w-md rounded-[3rem] p-12 text-center shadow-2xl animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+            <div className="text-6xl mb-8 animate-bounce">⚠️</div>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tighter italic mb-4">Hapus Akses?</h3>
+            <p className="text-sm font-bold text-slate-400 leading-relaxed mb-10">
+              Anda akan memutus akses <span className="text-slate-900 font-black">{confirmDelete.name}</span> dari sistem. Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button onClick={() => handleDelete(confirmDelete.id)} className="w-full h-16 rounded-[1.5rem] bg-rose-600 text-white shadow-xl shadow-rose-100 text-[0.7rem] font-black italic uppercase tracking-widest hover:bg-rose-700 transition-all">
+                YA, HAPUS AKSES
+              </Button>
+              <Button variant="ghost" onClick={() => setConfirmDelete(null)} className="w-full h-16 rounded-[1.5rem] border border-slate-100 text-[0.7rem] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all">
+                BATALKAN
+              </Button>
             </div>
           </div>
         </div>, document.body
