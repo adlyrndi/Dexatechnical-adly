@@ -62,7 +62,7 @@ export const AttendanceActions = ({
               </div>
               <div>
                 <h3 className="text-xl font-black text-slate-900 tracking-tight italic">Sesi Aktif</h3>
-                <p className="text-sm font-bold text-slate-400 mt-1">Telemetri Anda sedang direkam secara real-time.</p>
+                <p className="text-sm font-bold text-slate-400 mt-1">Data kehadiran Anda sedang direkam secara real-time.</p>
               </div>
               <div className="py-4"></div>
               <Button type="submit" disabled={isSubmitting} className="w-full h-14 italic tracking-widest uppercase font-black">

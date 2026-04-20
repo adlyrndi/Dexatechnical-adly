@@ -9,7 +9,8 @@ export default function Overview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (isSilent = false) => {
+      if (!isSilent) setLoading(true);
       try {
         const [statsData, logsData] = await Promise.all([
           adminService.getOverview(),
@@ -18,12 +19,20 @@ export default function Overview() {
         setStats(statsData);
         setRecentLogs(logsData.slice(0, 5));
       } catch (err) {
-        console.error("Gagal memuat data dashboard:", err);
       } finally {
-        setLoading(false);
+        if (!isSilent) setLoading(false);
       }
     };
+
     fetchData();
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchData(true);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const statCards = [
