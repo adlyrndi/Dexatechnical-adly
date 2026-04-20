@@ -66,8 +66,8 @@ export default function AttendanceLogs() {
                     </div>
                   </td>
                   <td className="px-12 py-8">
-                    <Badge variant={log.status?.toUpperCase() === 'PRESENT' ? 'emerald' : 'amber'} className="px-4 py-2 rounded-xl text-[0.65rem] font-black uppercase tracking-wider whitespace-nowrap">
-                      {log.status?.toUpperCase() === 'PRESENT' ? 'TEPAT WAKTU' : 'TERLAMBAT'}
+                    <Badge variant={log.status?.toLowerCase() === 'present' ? 'emerald' : 'amber'} className="px-4 py-2 rounded-xl text-[0.65rem] font-black uppercase tracking-wider whitespace-nowrap">
+                      {log.status?.toLowerCase() === 'present' ? 'TEPAT WAKTU' : 'TERLAMBAT'}
                     </Badge>
                   </td>
                   <td className="px-12 py-8">

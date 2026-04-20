@@ -72,14 +72,14 @@ export class AttendanceService {
   async getMyAttendances(userId: string) {
     return this.attendanceRepo.find({
       where: { userId },
-      order: { attendanceDate: 'DESC' }
+      order: { createdAt: 'DESC' }
     });
   }
 
   async getAllAttendances() {
     return this.attendanceRepo.find({
       relations: ['user'],
-      order: { attendanceDate: 'DESC' }
+      order: { createdAt: 'DESC' }
     });
   }
 }

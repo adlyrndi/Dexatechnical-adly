@@ -132,8 +132,8 @@ export default function Overview() {
                   <div className="text-xs font-black text-slate-600 mb-1">
                     {log.clockInTime ? new Date(log.clockInTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                   </div>
-                  <Badge variant={log.status === 'PRESENT' ? 'emerald' : 'amber'} className="text-[0.55rem]">
-                    {log.status === 'PRESENT' ? 'HADIR' : 'TERLAMBAT'}
+                  <Badge variant={log.status?.toLowerCase() === 'present' ? 'emerald' : 'amber'} className="text-[0.55rem]">
+                    {log.status?.toLowerCase() === 'present' ? 'TEPAT WAKTU' : 'TERLAMBAT'}
                   </Badge>
                 </div>
               </div>
@@ -153,7 +153,7 @@ export default function Overview() {
               <span className="text-blue-400 font-bold mb-3 uppercase text-[0.6rem]">Hari Ini</span>
             </div>
             <div className="text-[0.65rem] font-black text-slate-400 uppercase tracking-widest mb-6 relative z-10">
-              <span className="text-white">{totalPresent}</span> / {stats?.totalEmployees || 0} Karyawan Terdata
+              <span className="text-slate-400">{totalPresent}</span> / {stats?.totalEmployees || 0} Karyawan
             </div>
             <div className="w-full bg-slate-800 h-2.5 rounded-full mb-8 relative z-10">
               <div className="bg-gradient-to-r from-blue-600 to-indigo-500 h-full rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-1000" style={{ width: `${attendanceRate}%` }}></div>
